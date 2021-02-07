@@ -92,6 +92,7 @@ To Set up a new GCS Bucket for training and fine-tuning a T5 Model, please follo
     For the multi-task finetuning you have to merge all the input files for each task in order to predict all methods in one single step
     
     **Multi-task finetuning**
+    
     You can evaluate the **number of perfect predictions** running:
     ```
     python3 perfect_predictions.py --input_path <path_to_input_file>  --target_path <path_to_target_file> --prediction_path <path_to_prediction_file>
