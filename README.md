@@ -58,13 +58,13 @@ To Set up a new GCS Bucket for training and fine-tuning a T5 Model, please follo
     Here the **percentage of perfect predictions** for each model:
     | DATASET           | CONSTANT | SLANTED | ISR   | POLYNOMIAL |
     |-------------------|----------|---------|-------|------------|
-    | java construct    |    50.51 |   52.11 | 51.00 |      31.52 |
-    | java block        |    24.85 |   26.92 | 25.51 |       7.59 |
-    | java token        |    65.42 |   66.45 | 65.61 |      45.19 |
-    | android construct |    48.20 |   49.98 | 48.75 |      28.21 |
-    | android block     |    25.97 |   27.96 | 26.41 |       8.07 |
-    | android token     |    68.23 |   69.37 | 68.37 |      47.05 |
-    | overall           |    57.62 |   58.97 | 57.93 |      37.59 |
+    | java construct    |    50.51 |   52.11 | 50.77 |      31.36 |
+    | java block        |    24.85 |   26.92 | 25.52 |       7.46 |
+    | java token        |    65.42 |   66.45 | 65.43 |      44.75 |
+    | android construct |    48.20 |   49.98 | 48.59 |      27.98 |
+    | android block     |    25.97 |   27.96 | 26.46 |       7.99 |
+    | android token     |    68.23 |   69.37 | 68.38 |      46.70 |
+    | overall           |    57.62 |   58.97 | 57.81 |      37.28 |
     
 * ##### Finetuning
 
@@ -105,13 +105,13 @@ To Set up a new GCS Bucket for training and fine-tuning a T5 Model, please follo
     The performance of the model on each task is the following:
     | DATASET           | PERFECT PREDICTIONS | TOTAL NUMBER OF RECORDS | PERCENTAGE PERFECT PREDICTION |
     |-------------------|---------------------|-------------------------|-------------------------------|
-    | java construct    |               56865 |                  106237 |                         53.53 |
-    | java block        |               11656 |                   40008 |                         29.13 |
-    | java token        |              145518 |                  219486 |                         66.30 |
-    | android construct |               51379 |                  100536 |                         51.11 |
-    | android block     |                8060 |                   26978 |                         29.88 |
-    | android token     |              138999 |                  200504 |                         69.32 |
-    | overall           |              412477 |                  693749 |                         59.46 |
+    | java construct    |               56297 |                  106237 |                         52.99 |
+    | java block        |               11537 |                   40008 |                         28.84 |
+    | java token        |              145540 |                  219486 |                         66.31 |
+    | android construct |               51053 |                  100536 |                         50.78 |
+    | android block     |                8024 |                   26978 |                         29.74 |
+    | android token     |              138877 |                  200504 |                         69.26 |
+    | overall           |              411328 |                  693749 |                         59.29 |
     
     **Single-task finetuning from pretrained model**
     
@@ -159,13 +159,13 @@ To Set up a new GCS Bucket for training and fine-tuning a T5 Model, please follo
     A recap table with the percentage of perfect prediction is below:
     | DATASET           | MULTI-TASK PRETRAINED | SINGLE-TASK PRETRAINED | SINGLE-TASK FROM SCRATCH |
     |-------------------|-----------------------|------------------------|--------------------------|
-    | java construct    |                 53.53 |                  51.20 |                    48.41 |
-    | java block        |                 29.13 |                  27.18 |                    22.90 |
-    | java token        |                 66.30 |                  62.86 |                    60.92 |
-    | android construct |                 51.11 |                  49.30 |                    46.75 |
-    | android block     |                 29.88 |                  27.48 |                    22.76 |
-    | android token     |                 69.32 |                  64.83 |                    63.77 |
-    | overall           |                 59.46 |                  56.24 |                    54.10 |
+    | java construct    |                 52.29 |                  51.20 |                    48.41 |
+    | java block        |                 28.84 |                  27.18 |                    22.90 |
+    | java token        |                 66.31 |                  62.86 |                    60.92 |
+    | android construct |                 50.78 |                  49.30 |                    46.75 |
+    | android block     |                 29.74 |                  27.48 |                    22.76 |
+    | android token     |                 69.26 |                  64.83 |                    63.77 |
+    | overall           |                 59.29 |                  56.24 |                    54.10 |
     
     You can see that training a model with multiple tasks is beneficial for all the tasks.
     The pretraining is useful to increase the performances of each model.
