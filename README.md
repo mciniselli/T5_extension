@@ -5,7 +5,7 @@ In this work we explored the capabilities of **Text-To-Text Transfer Transformer
 ### Preliminary step
 The training of the model is done on a TPU instance of **Colab**.
 A GCS Bucket is mandatory.
-To Set up a new GCS Bucket for training and fine-tuning a T5 Model, please follow the orignal guide provided by Google [here](https://cloud.google.com/storage/docs/quickstart-console).
+To Set up a new GCS Bucket for training and fine-tuning a T5 Model, please follow the original guide provided by Google [here](https://cloud.google.com/storage/docs/quickstart-console).
 
 
 ### Pipeline
@@ -172,4 +172,74 @@ To Set up a new GCS Bucket for training and fine-tuning a T5 Model, please follo
     
     You can find the models and the prediction [here](https://drive.google.com/drive/folders/1tRsKzKvcmJRaczOUzYHmhIlR8WZR38qY?usp=sharing)
     
+### Score Analysis
+We chose the **best model** found (i.e., multi-task model with pre-training) to further analyze its performance. 
+T5 returns a score for each prediction, ranging from minus infinity to 0. This score is the log likelihood of the prediction itself. It means that if the score is 0 then the log likelihood (ln) of the prediction is 0. So the likelihood is 1 and this implies that the model has confidence 100\% that the prediction is correct (high confidence). If the score is -2 then the log likelihood of the prediction is -2. So the likelihood is 0.14 and this implies that the model has confidence 14\% that the prediction is correct (low confidence).
+
+We wanted to check if the model has **high confidence** when the prediction is correct. If this is true, then we could suggest a prediction to the developer only when the confidence is higher than a specific threshold.
+The likelihood goes from 0 to 1, so we split the confidence of the model in ten classes with a breadth of 0.1 (class 1 has a confidence c so that 0<=c<0.1, class 2 has a confidence of 0.1<=c<0.2 and so on).
+
+The following table reports the percentage of perfect predictions for each class:
+| CLASS | PERFECT PREDICTIONS | TOTAL NUMBER OF PREDICTIONS | PERFECT PREDICTIONS (\%) |
+|-------|---------------------|-----------------------------|-------------------------|
+| 1     |               1,011 |                      82,440 |                    1.23 |
+| 2     |               1,234 |                      28,009 |                    4.41 |
+| 3     |               2,365 |                      26,637 |                    8.88 |
+| 4     |               4,108 |                      26,305 |                   15.62 |
+| 5     |               7,054 |                      28,627 |                   24.64 |
+| 6     |              11,891 |                      33,223 |                   35.79 |
+| 7     |              14,034 |                      32,258 |                   43.51 |
+| 8     |              18,243 |                      35,043 |                   52.06 |
+| 9     |              30,279 |                      47,826 |                   63.31 |
+| 10    |             321,109 |                     353,381 |                   90.87 |   
+
+As you can see from the table, if the confidence is greater than 0.9 we have **more than 90\% of perfect predictions**. Moreover, 321,109 perfect predictions out of 411,328 total perfect predictions (78\%) have a confidence greater than 0.9. This suggests that a developer can confidently use our model when the prediction’s confidence is greater than 0.9. We also checked the same metrics for each test dataset in isolation and the percentage of perfect predictions of each class was similar.
+
+Then, we checked if the predictions that are **not correct** for each class **are similar** to the target prediction. The idea is to check if when the model has a high confidence and the prediction is not correct, the difference is small (maybe the only different token is “<” instead of “<=”). If this is True, we know that all the predictions, although not perfect, are good when the confidence is high.
+We measured the mean and the median Levenshtein distance (divided by the maximum number of tokens among the prediction and the target so that the value is rescaled in [0,1] interval) among all classes (we used the number of tokens retrieved from the abstract dataset, since src2abs is able to split each method in abstract tokens); the results are the following:
+| CLASS | MEAN | MEDIAN |
+|:-----:|:----:|:------:|
+|   1   | 0.50 |  0.50  |
+|   2   | 0.45 |  0.40  |
+|   3   | 0.45 |  0.40  |
+|   4   | 0.45 |  0.40  |
+|   5   | 0.45 |  0.40  |
+|   6   | 0.45 |  0.40  |
+|   7   | 0.46 |  0.423 |
+|   8   | 0.46 |  0.40  |
+|   9   | 0.47 |  0.44  |
+|   10  | 0.50 |  0.50  |
+
+There is **no difference** in mean or median among the classes, so our hypothesis is not verified. The number of tokens that we need to remove, add or change from each class is the same.
+
+Finally, we verified to what extent for the model **it is easier to predict the shorter predictions** (the confidence then is higher). There is a difference in the average number of tokens when the method is correctly predicted, compared with the cases when the prediction is not correct.
+In the table below we reported for each class the average number of tokens for all methods and the average number of tokens for the methods correctly and wrongly predicted. Just as an example, looking at the first row, we can see that the prediction of the methods with a confidence lower than 0.1 has on average 6.95 tokens. If we consider only the perfect prediction, the average is 6.23 (so the shortest methods are, in general, predicted more correctly). If we focus on the wrongly predicted methods, their average length is 6.96 tokens.
+| CLASS | AVERAGE TOKENS | AVERAGE TOKENS FOR PERFECT PREDICTION | AVERAGE TOKENS FOR NON PERFECT PREDICTIONS |
+|-------|----------------|---------------------------------------|--------------------------------------------|
+| 1     |           6.95 |                                  6.23 |                                       6.96 |
+| 2     |           7.06 |                                  6.55 |                                       7.08 |
+| 3     |           6.75 |                                  6.10 |                                       6.81 |
+| 4     |           6.42 |                                  5.56 |                                       6.58 |
+| 5     |           6.05 |                                  5.16 |                                       6.33 |
+| 6     |           5.60 |                                  4.58 |                                       6.16 |
+| 7     |           5.33 |                                  4.44 |                                       6.02 |
+| 8     |           5.08 |                                  4.30 |                                       5.91 |
+| 9     |           4.71 |                                  4.07 |                                       5.81 |
+| 10    |           3.15 |                                  2.91 |                                       5.52 |
+
+As we can see, the prediction with the highest confidence (greater than 0.9) has on average 3.15 tokens, whilst for the methods with the lowest confidence (less than 0.1) the average length is 6.95 tokens.
+
+We also evaluated **BLEU score** and **Levenshtein distance** in order to compare T5 model with RoBERTa.
+You can find the results in the paper.
+
+You can find all the scripts in `Score` folder.
+**evaluate_score.ipynb** allows you to create the score for each prediction (you have to pass as input and target the input file and the prediction generated by T5 model).
+
+To analyze the percentage of perfect prediction and the difference in Levenshtein distance among all classes you can run:
+```
+python3 src/6_evaluate_score/score_analysis.py --input_path inp/6_evaluate_score --score_path out/6_evaluate_score --score
+```
+
+
+   
     
